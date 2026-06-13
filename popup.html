@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    width: 320px;
+    margin: 0;
+    padding: 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #1a1a1a;
+    background: #fff;
+  }
+  h1 { font-size: 14px; margin: 0 0 4px; }
+  .hint { color: #666; font-size: 12px; margin: 0 0 12px; }
+  button {
+    font: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 9px 12px;
+    width: 100%;
+  }
+  #extract { background: #1769ff; color: #fff; font-weight: 600; }
+  #extract:disabled { opacity: .6; cursor: default; }
+  .row { display: flex; gap: 8px; margin-top: 8px; }
+  .row button { width: 50%; background: #f0f1f3; border: 1px solid #d8dadf; color: #1a1a1a; }
+  .row button:disabled { opacity: .45; cursor: default; }
+  .chk { display: flex; gap: 7px; align-items: flex-start; margin-top: 10px; font-size: 12px; color: #444; }
+  .chk input { margin-top: 2px; }
+  #status { margin-top: 12px; font-size: 12px; min-height: 16px; }
+  .ok { color: #137a3a; }
+  .err { color: #c01616; }
+  details { margin-top: 12px; }
+  summary { cursor: pointer; font-size: 12px; color: #555; }
+  input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 6px;
+    padding: 7px 8px;
+    font: inherit;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  .sub { color: #888; font-size: 11px; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <h1>TickerSnap</h1>
+  <p class="hint">Open the match's <b>Commentary</b> tab on FotMob or Sofascore, then click Extract.</p>
+
+  <button id="extract">Extract commentary</button>
+
+  <div class="row">
+    <button id="copy" disabled>Copy</button>
+    <button id="download" disabled>Download .txt</button>
+  </div>
+
+  <label class="chk">
+    <input type="checkbox" id="newestFirst" checked />
+    <span>Page lists newest entries first — flip to chronological order</span>
+  </label>
+
+  <div id="status"></div>
+
+  <details>
+    <summary>Advanced: custom container selector</summary>
+    <input id="selector" type="text" placeholder="e.g. [data-testid='commentary']" />
+    <p class="sub">Leave empty to auto-detect. Set this only if auto-detect grabs the wrong section (right-click a commentary line → Inspect to find a selector).</p>
+  </details>
+
+  <script src="popup.js"></script>
+</body>
+</html>

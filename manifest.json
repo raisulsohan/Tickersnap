@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "TickerSnap",
+  "version": "1.0",
+  "description": "Extracts full football match commentary text (FotMob, Sofascore) in one click. For personal / research use.",
+  "permissions": ["activeTab", "scripting"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TickerSnap — extract commentary"
+  }
+}
