@@ -1,8 +1,13 @@
 # TickerSnap
 
-A Chrome (Manifest V3) extension that extracts the **full match commentary text** from a football
-match page in one click — built for **FotMob** and **Sofascore**. Output can be copied or saved
-as `.txt`.
+A Chrome (Manifest V3) extension with two one-click extractors:
+
+1. **Match commentary** — the full commentary text from a football match page, built for
+   **FotMob** and **Sofascore**.
+2. **Article text** — the clean body text of any news article page, powered by Mozilla's
+   **Readability.js** (Apache-2.0), the same engine behind Firefox Reader View.
+
+Output can be copied or saved as `.txt`.
 
 ## How it works
 
@@ -29,13 +34,25 @@ no broad "read all websites" warning.
 
 ## Use
 
+**Commentary:**
 1. Open the match page and switch to its **Commentary** tab.
 2. Click the TickerSnap icon → **Extract commentary**.
 3. If the site lists oldest entries first, untick "newest first" before extracting.
 4. **Copy** or **Download .txt**.
 
+**Article:**
+1. Open any news article page.
+2. Click the TickerSnap icon → **Extract article text**.
+3. **Copy** or **Download .txt** (headline + byline + body, no captions/related-links).
+
+Article-mode limits: text behind a **paywall or login won't be extracted** (and the tool won't try
+to bypass it), and a few heavily scripted pages may yield partial results.
+
 ## A note on usage rights
 
-FotMob and Sofascore both prohibit scraping in their Terms of Use, and commentary is their
-copyrighted editorial text. Treat the output as **personal research / reference** — don't
-republish it verbatim or use it commercially. Write your own scripts from it.
+FotMob and Sofascore both prohibit scraping in their Terms of Use, and commentary — like news
+articles — is copyrighted editorial text. Treat all output as **personal research / reference** —
+don't republish it verbatim or use it commercially. Write your own scripts from it.
+
+Article extraction is powered by [Mozilla Readability](https://github.com/mozilla/readability)
+(Apache License 2.0); the license header is preserved in `Readability.js`.

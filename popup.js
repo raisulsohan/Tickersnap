@@ -1,12 +1,11 @@
+// ===========================================================================
+// TickerSnap
+//   Mode 1: football commentary from FotMob / Sofascore (prose-cluster method)
+//   Mode 2: article text from any news page (Mozilla Readability.js, bundled)
+// ===========================================================================
+
 // ---------------------------------------------------------------------------
-// TickerSnap — injected into the active page. Fully self-contained.
-//
-// 1. Find every real sentence block (prose) on the page.
-// 2. Resolve each to its card, group cards by their parent.
-// 3. The parent shared by the MOST cards is the commentary list -> keep ALL
-//    of its cards (with or without a visible minute / event label).
-// 4. Minute stamps: 45'  90+3'  (apostrophe-tolerant). Stampless cards
-//    (summaries, notes) are kept with a "•" label.
+// Injected: commentary extraction. Fully self-contained.
 // ---------------------------------------------------------------------------
 async function extractCommentary(opts) {
   const customSelector = (opts && opts.customSelector) || "";
@@ -107,7 +106,6 @@ async function extractCommentary(opts) {
       return { text: p.text, card, parent: card.parentElement };
     });
 
-    // Commentary list = parent shared by the most prose cards.
     const freq = new Map();
     for (const it of items) if (it.parent) freq.set(it.parent, (freq.get(it.parent) || 0) + 1);
     let list = null, best = 0;
@@ -116,8 +114,6 @@ async function extractCommentary(opts) {
     for (const it of items) {
       const minute = detectMinute(it.card);
       const type = detectType(it.card);
-      // Keep everything in the commentary list; elsewhere only minuted/labelled
-      // cards. Header and sidebar prose falls away.
       if (list && it.parent !== list && !minute && !type) continue;
       const key = it.text.slice(0, 160);
       if (map.has(key)) continue;
@@ -168,11 +164,49 @@ async function extractCommentary(opts) {
 }
 
 // ---------------------------------------------------------------------------
+// Injected: article extraction. Requires Readability.js injected first.
+// ---------------------------------------------------------------------------
+function extractArticleFromPage() {
+  try {
+    if (typeof Readability !== "function") return { error: "LIB_MISSING" };
+
+    const clone = document.cloneNode(true);
+    const parsed = new Readability(clone, { keepClasses: false }).parse();
+    if (!parsed) return { error: "NO_ARTICLE" };
+
+    // Rebuild clean paragraphs from the parsed HTML (leaf blocks only, no
+    // captions/asides) so paragraph breaks survive.
+    const SEL = "p,h2,h3,h4,li,blockquote,pre";
+    const tmp = document.createElement("div");
+    tmp.innerHTML = parsed.content || "";
+    const parts = [];
+    for (const b of tmp.querySelectorAll(SEL)) {
+      if (b.querySelector(SEL)) continue;            // keep leaf blocks only
+      if (b.closest("figure,figcaption,aside")) continue;
+      const t = (b.textContent || "").replace(/\s+/g, " ").trim();
+      if (t) parts.push(t);
+    }
+    let text = parts.join("\n\n").trim();
+    if (!text) text = (parsed.textContent || "").replace(/\n{3,}/g, "\n\n").trim();
+    if (text.length < 200) return { error: "NO_ARTICLE" };
+
+    return {
+      title: (parsed.title || document.title || "Article").trim(),
+      byline: (parsed.byline || "").trim(),
+      site: (parsed.siteName || location.hostname || "").trim(),
+      text
+    };
+  } catch (e) {
+    return { error: e && e.message ? e.message : String(e) };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Popup side.
 // ---------------------------------------------------------------------------
 const $ = (id) => document.getElementById(id);
 let extractedText = "";
-let extractedTitle = "Match";
+let extractedFilename = "commentary.txt";
 
 function setStatus(msg, cls) {
   const el = $("status");
@@ -180,13 +214,19 @@ function setStatus(msg, cls) {
   el.className = cls || "";
 }
 
+function setBusy(busy) {
+  $("extract").disabled = busy;
+  $("extractArticle").disabled = busy;
+  if (busy) { $("copy").disabled = true; $("download").disabled = true; }
+}
+
 function sanitizeFilename(name) {
   return (
-    (name || "commentary")
+    (name || "text")
       .replace(/[\\/:*?"<>|]+/g, " ")
       .replace(/\s+/g, " ")
       .trim()
-      .slice(0, 80) || "commentary"
+      .slice(0, 80) || "text"
   );
 }
 
@@ -197,22 +237,22 @@ function lineFor(e) {
   return `${label}  ${tag}${e.body}`.trim();
 }
 
+async function getActiveHttpTab() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab || !tab.id) { setStatus("No active tab found.", "err"); return null; }
+  if (!/^https?:\/\//.test(tab.url || "")) {
+    setStatus("This tab can't be read (browser pages are off-limits). Open a normal web page and retry.", "err");
+    return null;
+  }
+  return tab;
+}
+
 $("extract").addEventListener("click", async () => {
   setStatus("Extracting… (auto-scrolling the commentary)", "");
-  $("extract").disabled = true;
-  $("copy").disabled = true;
-  $("download").disabled = true;
-
+  setBusy(true);
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !tab.id) {
-      setStatus("No active tab found.", "err");
-      return;
-    }
-    if (!/^https?:\/\//.test(tab.url || "")) {
-      setStatus("This tab can't be read (browser pages are off-limits). Open a match page and retry.", "err");
-      return;
-    }
+    const tab = await getActiveHttpTab();
+    if (!tab) return;
 
     const customSelector = $("selector").value.trim();
     const reverse = $("newestFirst").checked;
@@ -230,9 +270,10 @@ $("extract").addEventListener("click", async () => {
     } else if (!data.count) {
       setStatus("No commentary entries found. Reload the page and retry.", "err");
     } else {
-      extractedTitle = data.title || "Match";
-      const head = extractedTitle + "\n" + "=".repeat(Math.min(extractedTitle.length, 60));
+      const title = data.title || "Match";
+      const head = title + "\n" + "=".repeat(Math.min(title.length, 60));
       extractedText = head + "\n\n" + data.entries.map(lineFor).join("\n") + "\n";
+      extractedFilename = sanitizeFilename(title) + " - commentary.txt";
       setStatus(`Done — ${data.count} entries captured.`, "ok");
       $("copy").disabled = false;
       $("download").disabled = false;
@@ -240,7 +281,55 @@ $("extract").addEventListener("click", async () => {
   } catch (e) {
     setStatus("Error: " + (e && e.message ? e.message : String(e)), "err");
   } finally {
-    $("extract").disabled = false;
+    setBusy(false);
+  }
+});
+
+$("extractArticle").addEventListener("click", async () => {
+  setStatus("Extracting article…", "");
+  setBusy(true);
+  try {
+    const tab = await getActiveHttpTab();
+    if (!tab) return;
+
+    // 1) Load the bundled Readability library into the page's isolated world.
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ["Readability.js"],
+    });
+
+    // 2) Run the extractor (same world, so it sees the Readability global).
+    const results = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: extractArticleFromPage,
+    });
+
+    const data = results && results[0] && results[0].result;
+    if (!data) {
+      setStatus("Couldn't read the page. Reload it and retry.", "err");
+    } else if (data.error === "LIB_MISSING") {
+      setStatus("Internal error: Readability library didn't load. Reload the page and retry.", "err");
+    } else if (data.error === "NO_ARTICLE") {
+      setStatus("Couldn't find an article body here. If it's behind a paywall/login, the hidden text can't be extracted.", "err");
+    } else if (data.error) {
+      setStatus("Error: " + data.error, "err");
+    } else {
+      const title = data.title || "Article";
+      const metaBits = [data.site, data.byline].filter(Boolean).join(" — ");
+      const head =
+        title + "\n" + "=".repeat(Math.min(title.length, 60)) +
+        (metaBits ? "\n" + metaBits : "");
+      extractedText = head + "\n\n" + data.text + "\n";
+      extractedFilename = sanitizeFilename(title) + ".txt";
+      const words = data.text.split(/\s+/).filter(Boolean).length;
+      setStatus(`Done — article captured (~${words} words).`, "ok");
+      $("copy").disabled = false;
+      $("download").disabled = false;
+    }
+  } catch (e) {
+    setStatus("Error: " + (e && e.message ? e.message : String(e)), "err");
+  } finally {
+    setBusy(false);
   }
 });
 
@@ -258,7 +347,7 @@ $("download").addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = sanitizeFilename(extractedTitle) + " - commentary.txt";
+  a.download = extractedFilename;
   document.body.appendChild(a);
   a.click();
   a.remove();

@@ -25,7 +25,8 @@
     width: 100%;
   }
   #extract { background: #1769ff; color: #fff; font-weight: 600; }
-  #extract:disabled { opacity: .6; cursor: default; }
+  #extractArticle { background: #10855c; color: #fff; font-weight: 600; margin-top: 8px; }
+  #extract:disabled, #extractArticle:disabled { opacity: .6; cursor: default; }
   .row { display: flex; gap: 8px; margin-top: 8px; }
   .row button { width: 50%; background: #f0f1f3; border: 1px solid #d8dadf; color: #1a1a1a; }
   .row button:disabled { opacity: .45; cursor: default; }
@@ -50,9 +51,10 @@
 </head>
 <body>
   <h1>TickerSnap</h1>
-  <p class="hint">Open the match's <b>Commentary</b> tab on FotMob or Sofascore, then click Extract.</p>
+  <p class="hint"><b>Commentary:</b> open the match's Commentary tab on FotMob or Sofascore.<br/><b>Article:</b> open any news article page.</p>
 
   <button id="extract">Extract commentary</button>
+  <button id="extractArticle">Extract article text</button>
 
   <div class="row">
     <button id="copy" disabled>Copy</button>
@@ -61,15 +63,15 @@
 
   <label class="chk">
     <input type="checkbox" id="newestFirst" checked />
-    <span>Page lists newest entries first — flip to chronological order</span>
+    <span>Commentary only: page lists newest entries first — flip to chronological</span>
   </label>
 
   <div id="status"></div>
 
   <details>
-    <summary>Advanced: custom container selector</summary>
+    <summary>Advanced: custom container selector (commentary)</summary>
     <input id="selector" type="text" placeholder="e.g. [data-testid='commentary']" />
-    <p class="sub">Leave empty to auto-detect. Set this only if auto-detect grabs the wrong section (right-click a commentary line → Inspect to find a selector).</p>
+    <p class="sub">Leave empty to auto-detect. Set this only if commentary auto-detect grabs the wrong section (right-click a commentary line → Inspect to find a selector).</p>
   </details>
 
   <script src="popup.js"></script>
