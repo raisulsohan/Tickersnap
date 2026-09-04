@@ -66,6 +66,10 @@ no broad "read all websites" warning.
 Article-mode limits: text behind a **paywall or login won't be extracted** (and the tool won't try
 to bypass it), and native Chrome internal plugin pages (`chrome-extension://` PDFium) restrict script injection by browser policy. For web PDF readers, Google Docs, and news sites, extraction is supported out of the box.
 
+## Privacy
+
+TickerSnap respects your privacy: it does not collect, record, or transmit any personal data or browsing activity. All text processing and formatting run 100% locally on your device. For full details, see the [Privacy Policy](PRIVACY.md).
+
 ## A note on usage rights
 
 FotMob and Sofascore both prohibit scraping in their Terms of Use, and commentary — like news
@@ -74,3 +78,4 @@ don't republish it verbatim or use it commercially. Write your own scripts from 
 
 Article extraction is powered by [Mozilla Readability](https://github.com/mozilla/readability)
 (Apache License 2.0); the license header is preserved in `Readability.js`.
+
