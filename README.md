@@ -9,6 +9,10 @@ A Chrome (Manifest V3) extension with two one-click extractors:
 
 Output can be copied or saved as `.txt`.
 
+Every capture shows up in a preview panel first, so you can check you got the right section before
+copying. The result survives closing the popup — it's kept for the rest of the browser session —
+and the checkboxes and custom selector are remembered between uses.
+
 ## How it works
 
 TickerSnap doesn't use site-specific selectors. It finds every real sentence block on the page,
@@ -40,13 +44,27 @@ no broad "read all websites" warning.
 3. If the site lists oldest entries first, untick "newest first" before extracting.
 4. **Copy** or **Download .txt**.
 
-**Article:**
-1. Open any news article page.
-2. Click the TickerSnap icon → **Extract article text**.
-3. **Copy** or **Download .txt** (headline + byline + body, no captions/related-links).
+**Article / Story / Book / PDF / Google Docs:**
+1. Open any news article, blog, story, e-library, Google Doc, or web PDF viewer (e.g. PDF.js, Google Drive PDF viewer).
+2. *(For PDFs / Paginated Readers)* Scroll to the page you want — TickerSnap automatically extracts text from the currently focused/visible page.
+3. *(Optional)* Select text on the page first if you only want a specific highlighted passage.
+4. Click the TickerSnap icon → **Extract article text**.
+5. *(Optional)* Tick "include Title & Source header" if you want the header metadata included.
+6. **Copy** or **Download .txt**.
+
+**Preview and persistence:**
+
+- After either extraction the text appears in a scrollable preview below the buttons, with a word
+  and character count. **Hide** / **Show** collapses it, and that choice sticks.
+- Closing the popup doesn't lose the capture: reopen it and the last result is restored, still
+  ready to copy or download. It's cleared when the browser restarts.
+- "include Title & Source header", "newest first" and the Advanced selector are saved too, so a
+  site that needs a custom selector only needs it typed once. These settings ride along with
+  Chrome profile sync; the captured text itself never leaves the machine.
+- A failed extraction leaves the previous capture in place rather than wiping it.
 
 Article-mode limits: text behind a **paywall or login won't be extracted** (and the tool won't try
-to bypass it), and a few heavily scripted pages may yield partial results.
+to bypass it), and native Chrome internal plugin pages (`chrome-extension://` PDFium) restrict script injection by browser policy. For web PDF readers, Google Docs, and news sites, extraction is supported out of the box.
 
 ## A note on usage rights
 

@@ -6,7 +6,7 @@
   :root { color-scheme: light dark; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    width: 320px;
+    width: 360px;
     margin: 0;
     padding: 14px;
     font-size: 13px;
@@ -47,6 +47,40 @@
     border-radius: 6px;
   }
   .sub { color: #888; font-size: 11px; margin-top: 4px; }
+
+  #previewWrap { margin-top: 12px; border-top: 1px solid #e6e8ec; padding-top: 10px; }
+  .pvhead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  #pvmeta { font-size: 11px; color: #666; }
+  .linkbtn {
+    width: auto;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #1769ff;
+    font-size: 11px;
+    text-decoration: underline;
+  }
+  #preview {
+    margin: 0;
+    max-height: 190px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #333;
+    background: #f7f8fa;
+    border: 1px solid #e0e2e7;
+    border-radius: 6px;
+    padding: 8px 9px;
+  }
 </style>
 </head>
 <body>
@@ -61,17 +95,30 @@
     <button id="download" disabled>Download .txt</button>
   </div>
 
+  <div id="status"></div>
+
+  <div id="previewWrap" hidden>
+    <div class="pvhead">
+      <span id="pvmeta"></span>
+      <button type="button" id="pvtoggle" class="linkbtn">Hide</button>
+    </div>
+    <pre id="preview"></pre>
+  </div>
+
+  <label class="chk">
+    <input type="checkbox" id="includeHeader" />
+    <span>Article only: include Title & Source header</span>
+  </label>
+
   <label class="chk">
     <input type="checkbox" id="newestFirst" checked />
     <span>Commentary only: page lists newest entries first — flip to chronological</span>
   </label>
 
-  <div id="status"></div>
-
   <details>
-    <summary>Advanced: custom container selector (commentary)</summary>
-    <input id="selector" type="text" placeholder="e.g. [data-testid='commentary']" />
-    <p class="sub">Leave empty to auto-detect. Set this only if commentary auto-detect grabs the wrong section (right-click a commentary line → Inspect to find a selector).</p>
+    <summary>Advanced: custom container selector</summary>
+    <input id="selector" type="text" placeholder="e.g. .entry-content or [data-testid='commentary']" />
+    <p class="sub">Leave empty to auto-detect. Useful if commentary or article auto-detect grabs the wrong section (right-click → Inspect to find a selector).</p>
   </details>
 
   <script src="popup.js"></script>

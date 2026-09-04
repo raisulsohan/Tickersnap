@@ -1,0 +1,10 @@
+# Build and distribution packages
+*.zip
+*.crx
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary / log files
+*.log
